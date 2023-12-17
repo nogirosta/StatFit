@@ -1,0 +1,119 @@
+{% extends "shared/base.html" %}
+
+{% block content %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .form-group input[type="file"] {
+        border: 1px solid #ccc;
+        display: block;
+        width: 100%;
+        padding: 10px;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .daily-challenge {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .daily-challenge h3 {
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container">
+    <h2>Fitness Tracker</h2>
+
+    <!-- File Upload Form -->
+    <form id="file-upload-form" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="fileInput">Download your activity file:</label>
+            <input type="file" id="fileInput" name="file">
+        </div>
+        <button type="submit" class="btn btn-primary">Update Data</button>
+    </form>
+    <!-- Fitness Score Display -->
+    <div id="fitness-score-display" style="margin-top: 20px;"></div>
+
+
+    <!-- Daily Challenge Display -->
+    <div class="daily-challenge">
+        <h3>Today's Challenge</h3>
+        <p id="challengeText">Loading challenge...</p>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('file-upload-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        fetch('/upload-file', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateScoreDisplay(data.fitness_score); // Call updateScoreDisplay with the score
+            document.getElementById('challengeText').innerText = data.challenge; // Update challenge text separately
+        });
+    });
+
+    function updateScoreDisplay(score) {
+        var scoreLabels = {
+            1: 'Poor',
+            2: 'Average',
+            3: 'Good!',
+            4: 'Excellent!'
+        };
+        var scoreColor = {
+            'Poor': 'red',
+            'Average': 'orange',
+            'Good!': 'yellowgreen',
+            'Excellent!': 'green'
+        };
+
+        var descriptions = {
+            1: "Needs Improvement. Your activity levels and sleep patterns suggest that there's significant room for improvement. Focus on increasing your daily steps and achieving consistent, restful sleep.",
+            2: "Fair. You're on the right track, but there's still work to be done. Try to incorporate more physical activity into your routine and aim for a better sleep schedule.",
+            3: "Good. You're doing well with your fitness habits! Keep up the good work with your steps and sleep, but there's still a little room for optimization.",
+            4: "Excellent! You're excelling in maintaining a healthy balance of physical activity and rest. Your dedication to fitness and sleep hygiene is commendable."
+        };
+        var scoreText = scoreLabels[score]; // Get the text label for the score
+        var displayColor = scoreColor[scoreText]; // Get the color for the text label
+        var scoreHtml = '<span style="color: ' + displayColor + ';">' + scoreText + '</span>';
+        var display = document.getElementById('fitness-score-display');
+        // Apply color based on score
+        var scoreHtml = '<span style="color: ' + displayColor + ';">' + scoreText + '</span>';
+        display.innerHTML = '<h3>Your Fitness Score: ' + scoreHtml + '</h3><p>' + descriptions[score] + '</p>';
+        // Optionally, you can also add some fancy styling to your description text
+        display.style.border = "2px solid " + displayColor;
+        display.style.padding = "10px";
+        display.style.borderRadius = "5px";
+        display.style.marginTop = "20px";
+    }
+</script>
+
+{% endblock %}
+
+
